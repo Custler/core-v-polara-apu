@@ -166,6 +166,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             // HLIC - hart local interrupt controller
             CPU%d_intc: interrupt-controller {
                 #interrupt-cells = <1>;
+                #address-cells = <1>;       // # SVT: added
                 interrupt-controller;
                 compatible = "riscv,cpu-intc";
             };
