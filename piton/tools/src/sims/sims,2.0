@@ -1420,6 +1420,8 @@ sub generic_sim_build
       print "$prg: LM_LICENSE_FILE : none\n";
     }
 
+    push (@{$opt{vcs_build_args}}, "-full64 ") ; # SN
+    push (@{$opt{vcs_build_args}}, "-debug_access+r -kdb ") ; # SN
     push (@{$opt{sim_build_args}}, "-f flist") if (!($opt{vcs_build} && @{$opt{flist_vhdl}}));
 
     if ($opt{vcs_build}) {
@@ -1430,6 +1432,7 @@ sub generic_sim_build
       foreach my $top_n (@{$opt{toplevel}}) {
         push(@{$opt{vcs_build_args}}, "-top $top_n") ;
       }
+
 
       push (@{$opt{vcs_build_args}}, "+compsdf") if ($opt{vcs_use_sdf}) ;
       push (@{$opt{vcs_build_args}}, "+initreg") if ($opt{vcs_use_initreg}) ;
@@ -1624,6 +1627,8 @@ sub generic_sim_build
       # always_comb blocks that operate on arrays inside a generate statement.
       # [SVCHK] - Some checking for conflicts with always_comb and always_latch variables not yet supported.
       $build_cmd .= " -suppress 2583 ";
+      $build_cmd .= " -suppress 2997 "; # SN
+      $build_cmd .= " -svinputport=net "; # MW
       if (@{$opt{flist_vhdl}}) {
         $build_cmd_vhdl = "vcom" ;
         if ($ENV{MODELSIM_VERSION}) {
@@ -1874,7 +1879,8 @@ sub generic_sim_run
     # run the command
     if ($opt{vcs_run}) {
       $cmd .= "collect " if ($opt{vcs_prof}) ;
-      $cmd .= "$model_path/simv " ;
+      $cmd .= "$model_path/simv " ; #SN
+#       $cmd .= "$model_path/simv -verdi " ; #SN
       $cmd .= join (" ", @{$opt{sim_run_args}}) ;
     }
 
@@ -1913,7 +1919,7 @@ sub generic_sim_run
     }
 
     if ($opt{msm_run}) {
-      $cmd .= "vsim" ;
+      $cmd .= "vsim -64" ; # SN
       if ($ENV{MODELSIM_VERSION}) {
         $cmd .= "$ENV{MODELSIM_VERSION}" ;
       }
@@ -1925,7 +1931,7 @@ sub generic_sim_run
       if ($opt{log_all}) {
       	# this logs everything such that the sim can be inspected later on
       	print("$prg: dumping all waves to save.wlf - this file can get very large so make sure you run this on a fast disk with enough space.\n");
-      	$cmd .= " -wlfcompress -wlf all-waves.wlf -do \"log -r /*\" ";
+      	$cmd .= " -wlfcompress -wlf all-waves.wlf -debugdb -do \"log -r /*\" "; # SN
       }
       $cmd .= "-lib ";
       $cmd .= "$model_path/work ";
